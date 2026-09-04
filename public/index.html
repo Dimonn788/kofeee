@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Кофе & Точка — меню и заказ навынос</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --brown:#2C1810; --brown-soft:#4A2E1E; --beige:#F5E6D3; --beige-light:#FBF4EA;
+    --caramel:#E67A2E; --caramel-dark:#C9631E;
+    --line: rgba(44,24,16,.14); --shadow: 0 12px 28px rgba(44,24,16,.14);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0; font-family:'Inter',sans-serif; background:var(--beige-light); color:var(--brown); -webkit-font-smoothing:antialiased;}
+  h1,h2,h3,.display{font-family:'Playfair Display',serif; margin:0; color:var(--brown);}
+  img{max-width:100%; display:block;}
+  button{font-family:inherit; cursor:pointer; border:none; background:none;}
+  a{color:inherit; text-decoration:none;}
+  .wrap{max-width:1180px; margin:0 auto; padding:0 24px;}
+  button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-visible{outline:2px solid var(--caramel-dark); outline-offset:2px;}
+  @media (prefers-reduced-motion: reduce){ *{animation-duration:.001ms !important; transition-duration:.001ms !important;} }
+
+  header{position:sticky; top:0; z-index:40; background:rgba(251,244,234,.92); backdrop-filter:blur(6px); border-bottom:1px solid var(--line);}
+  .nav-row{display:flex; align-items:center; justify-content:space-between; height:76px;}
+  .logo{display:flex; align-items:center; gap:10px; font-family:'Playfair Display',serif; font-weight:700; font-size:22px;}
+  .logo .mark{width:38px; height:38px; border-radius:50%; background:var(--brown); color:var(--beige); display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+  nav.main-nav{display:flex; align-items:center; gap:4px;}
+  nav.main-nav a{padding:10px 16px; border-radius:999px; font-weight:600; font-size:15px; color:var(--brown-soft); transition:background .15s ease, color .15s ease;}
+  nav.main-nav a:hover{background:rgba(44,24,16,.06); color:var(--brown);}
+  .cart-btn{display:flex; align-items:center; gap:8px; padding:10px 18px; border-radius:999px; background:var(--brown); color:var(--beige); font-weight:600; font-size:15px; transition:background .15s ease;}
+  .cart-btn:hover{background:var(--brown-soft);}
+  .cart-count{background:var(--caramel); color:#fff; min-width:22px; height:22px; border-radius:999px; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; padding:0 5px;}
+  .burger{display:none;}
+
+  .hero{position:relative; padding:96px 0 80px; overflow:hidden; background:radial-gradient(600px 300px at 85% -10%, rgba(230,122,46,.18), transparent 70%), var(--beige);}
+  .hero-grid{display:grid; grid-template-columns:1.1fr .9fr; gap:48px; align-items:center;}
+  .eyebrow-line{display:flex; align-items:center; gap:10px; color:var(--caramel-dark); font-weight:600; font-size:14px; margin-bottom:18px;}
+  .eyebrow-line .dot{width:8px; height:8px; border-radius:50%; background:var(--caramel);}
+  .hero h1{font-size:clamp(36px,5.2vw,60px); line-height:1.08; letter-spacing:-.01em; max-width:11ch;}
+  .hero p.lead{margin-top:22px; font-size:18px; line-height:1.6; color:var(--brown-soft); max-width:46ch;}
+  .hero-cta{margin-top:34px; display:flex; align-items:center; gap:18px; flex-wrap:wrap;}
+  .btn-primary{background:var(--caramel); color:#fff; padding:16px 30px; border-radius:14px; font-weight:700; font-size:16px; box-shadow:0 10px 24px rgba(230,122,46,.35); transition:transform .15s ease, background .15s ease;}
+  .btn-primary:hover{background:var(--caramel-dark); transform:translateY(-2px);}
+  .hero-note{font-size:14px; color:var(--brown-soft); opacity:.85;}
+  .hero-visual{position:relative; aspect-ratio:1/1; display:flex; align-items:center; justify-content:center;}
+  .cup-plate{position:absolute; inset:6%; background:var(--beige-light); border-radius:50%; box-shadow: inset 0 0 0 1px var(--line), var(--shadow);}
+  .cup-plate svg{width:78%; height:78%;}
+
+  .section{padding:88px 0;}
+  .section-head{max-width:60ch; margin-bottom:48px;}
+  .section-head h2{font-size:clamp(28px,3.4vw,38px); line-height:1.15;}
+  .section-head p{margin-top:12px; color:var(--brown-soft); font-size:16px; line-height:1.6;}
+
+  .steps{display:grid; grid-template-columns:repeat(3,1fr); border-top:1px solid var(--line); border-bottom:1px solid var(--line);}
+  .step{padding:32px 28px; border-right:1px solid var(--line); position:relative;}
+  .step:last-child{border-right:none;}
+  .step .step-index{font-family:'Playfair Display',serif; font-size:15px; color:var(--caramel-dark); font-weight:700; margin-bottom:14px;}
+  .step h3{font-size:21px; margin-bottom:10px;}
+  .step p{margin:0; color:var(--brown-soft); font-size:15px; line-height:1.55;}
+  .step-arrow{position:absolute; right:-13px; top:32px; width:26px; height:26px; border-radius:50%; background:var(--beige-light); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; color:var(--caramel-dark); font-size:13px;}
+  .step:last-child .step-arrow{display:none;}
+
+  .locations{display:grid; grid-template-columns:repeat(3,1fr); gap:20px;}
+  .location-card{background:var(--beige); border-radius:20px; padding:26px;}
+  .location-card .loc-top{display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:18px;}
+  .loc-badge{width:44px; height:44px; border-radius:12px; background:var(--brown); color:var(--beige); display:flex; align-items:center; justify-content:center; font-size:19px;}
+  .loc-status{font-size:12px; font-weight:700; color:#3B7A3A; background:rgba(59,122,58,.12); padding:5px 10px; border-radius:999px;}
+  .location-card h3{font-size:20px; margin-bottom:6px;}
+  .location-card .loc-hours{font-size:14px; color:var(--brown-soft);}
+
+  .menu-section{background:var(--brown); color:var(--beige);}
+  .menu-section .section-head h2{color:var(--beige);}
+  .menu-section .section-head p{color:rgba(245,230,211,.7);}
+  .tabs{display:flex; gap:6px; margin-bottom:40px; background:rgba(245,230,211,.08); padding:6px; border-radius:14px; width:fit-content;}
+  .tab-btn{padding:12px 24px; border-radius:10px; font-weight:600; font-size:15px; color:rgba(245,230,211,.65); transition:background .15s ease, color .15s ease;}
+  .tab-btn.active{background:var(--caramel); color:#fff;}
+  .tab-btn:hover:not(.active){color:var(--beige);}
+  .menu-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:20px;}
+  .menu-card{background:var(--brown-soft); border-radius:18px; padding:24px; display:flex; flex-direction:column; border:1px solid rgba(245,230,211,.08); transition:border-color .15s ease; position:relative;}
+  .menu-card:hover{border-color:rgba(245,230,211,.2);}
+  .menu-card.sold-out{opacity:.5;}
+  .sold-out-tag{position:absolute; top:16px; right:16px; background:rgba(0,0,0,.35); color:#fff; font-size:11px; font-weight:700; padding:4px 9px; border-radius:999px;}
+  .item-icon{width:56px; height:56px; border-radius:14px; background:rgba(245,230,211,.08); display:flex; align-items:center; justify-content:center; color:var(--caramel); margin-bottom:18px;}
+  .menu-card h3{font-size:19px; color:var(--beige); margin-bottom:8px;}
+  .menu-card .desc{font-size:14px; line-height:1.5; color:rgba(245,230,211,.62); flex-grow:1; margin-bottom:20px;}
+  .item-foot{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+  .item-price{font-family:'Playfair Display',serif; font-weight:700; font-size:20px; color:var(--caramel);}
+  .add-btn{background:var(--caramel); color:#fff; padding:10px 16px; border-radius:10px; font-weight:700; font-size:14px; transition:background .15s ease;}
+  .add-btn:hover{background:#fff; color:var(--caramel-dark);}
+  .add-btn.added{background:#3B7A3A;}
+  .add-btn:disabled{background:rgba(245,230,211,.15); color:rgba(245,230,211,.4); cursor:not-allowed;}
+
+  footer{background:#20130C; color:rgba(245,230,211,.55); padding:44px 0; font-size:14px;}
+  footer .foot-row{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;}
+  footer strong{color:var(--beige);}
+
+  .overlay{position:fixed; inset:0; background:rgba(32,19,12,.55); display:none; align-items:flex-start; justify-content:center; padding:40px 16px; overflow-y:auto; z-index:100;}
+  .overlay.open{display:flex;}
+  .modal{background:var(--beige-light); border-radius:22px; width:100%; max-width:480px; padding:30px; box-shadow:0 30px 60px rgba(32,19,12,.35);}
+  .modal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:22px;}
+  .modal-head h2{font-size:24px;}
+  .modal-close{width:34px; height:34px; border-radius:50%; background:var(--beige); color:var(--brown); display:flex; align-items:center; justify-content:center; font-size:16px; transition:background .15s ease;}
+  .modal-close:hover{background:var(--brown); color:var(--beige);}
+  .cart-list{display:flex; flex-direction:column; gap:14px; margin-bottom:20px;}
+  .cart-empty{color:var(--brown-soft); font-size:15px; text-align:center; padding:30px 0;}
+  .cart-row{display:flex; align-items:center; gap:14px; background:var(--beige); border-radius:14px; padding:14px;}
+  .cart-row-icon{width:44px; height:44px; border-radius:10px; background:#fff; display:flex; align-items:center; justify-content:center; color:var(--caramel-dark); flex-shrink:0;}
+  .cart-row-info{flex-grow:1; min-width:0;}
+  .cart-row-info .name{font-weight:600; font-size:15px;}
+  .cart-row-info .price{font-size:13px; color:var(--brown-soft);}
+  .qty-control{display:flex; align-items:center; gap:8px; flex-shrink:0;}
+  .qty-btn{width:28px; height:28px; border-radius:8px; background:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; color:var(--brown); box-shadow:0 1px 2px rgba(0,0,0,.08);}
+  .qty-btn:hover{background:var(--caramel); color:#fff;}
+  .qty-value{min-width:18px; text-align:center; font-weight:600; font-size:14px;}
+  .cart-total{display:flex; align-items:center; justify-content:space-between; padding-top:18px; border-top:1px solid var(--line); margin-bottom:20px;}
+  .cart-total .label{font-size:15px; color:var(--brown-soft);}
+  .cart-total .value{font-family:'Playfair Display',serif; font-size:24px; font-weight:700;}
+  .btn-block{width:100%; background:var(--caramel); color:#fff; padding:16px; border-radius:14px; font-weight:700; font-size:16px; transition:background .15s ease;}
+  .btn-block:hover{background:var(--caramel-dark);}
+  .btn-block:disabled{background:var(--line); color:var(--brown-soft); cursor:not-allowed;}
+  .field{margin-bottom:16px;}
+  .field label{display:block; font-size:13px; font-weight:600; color:var(--brown-soft); margin-bottom:7px;}
+  .field input, .field select, .field textarea{width:100%; padding:13px 14px; border-radius:12px; border:1px solid var(--line); background:#fff; font-family:inherit; font-size:15px; color:var(--brown);}
+  .field input:focus, .field select:focus, .field textarea:focus{border-color:var(--caramel);}
+  .field textarea{resize:vertical; min-height:70px;}
+  .checkout-total{display:flex; justify-content:space-between; align-items:center; padding:14px 0 20px; font-size:15px; color:var(--brown-soft);}
+  .checkout-total .value{font-weight:700; color:var(--brown); font-family:'Playfair Display',serif; font-size:19px;}
+  .error-text{color:#B33A2E; font-size:12px; margin-top:6px; display:none;}
+  .field.error input, .field.error select{border-color:#B33A2E;}
+  .field.error .error-text{display:block;}
+  .form-msg{font-size:13px; color:#B33A2E; margin-bottom:14px; display:none;}
+  .form-msg.show{display:block;}
+
+  @media (max-width:980px){
+    .hero-grid{grid-template-columns:1fr; gap:36px;}
+    .hero-visual{max-width:340px; margin:0 auto;}
+    .steps{grid-template-columns:1fr; border:none;}
+    .step{border:1px solid var(--line); border-radius:16px; margin-bottom:14px;}
+    .step-arrow{display:none;}
+    .locations{grid-template-columns:1fr;}
+    .menu-grid{grid-template-columns:repeat(2,1fr);}
+  }
+  @media (max-width:640px){
+    .nav-row{height:66px;}
+    nav.main-nav{position:fixed; top:66px; left:0; right:0; background:var(--beige-light); flex-direction:column; align-items:stretch; padding:10px 20px 20px; gap:2px; border-bottom:1px solid var(--line); transform:translateY(-130%); transition:transform .2s ease; z-index:39;}
+    nav.main-nav.open{transform:translateY(0);}
+    nav.main-nav a{padding:13px 14px;}
+    .burger{display:flex; width:40px; height:40px; border-radius:10px; background:rgba(44,24,16,.06); align-items:center; justify-content:center; font-size:18px; color:var(--brown);}
+    .logo span.text{display:none;}
+    .hero{padding:56px 0 56px;}
+    .hero-cta{flex-direction:column; align-items:flex-start;}
+    .section{padding:56px 0;}
+    .menu-grid{grid-template-columns:1fr;}
+    .tabs{width:100%;}
+    .tab-btn{flex:1; padding:11px 8px; font-size:13px; text-align:center;}
+    .modal{padding:22px; border-radius:18px;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav-row">
+    <div class="logo"><span class="mark">
+      <svg viewBox="0 0 24 24" width="20" height="20"><path d="M5 8h13l-1.1 10.2c-.15 1.4-1.35 2.5-2.8 2.5H8.9c-1.45 0-2.65-1.1-2.8-2.5L5 8Z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M17.5 9.5c2 0 3.4 1.3 3.4 3.1 0 1.8-1.4 3.1-3.4 3.1" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+    </span><span class="text">Кофе &amp; Точка</span></div>
+    <nav class="main-nav" id="mainNav">
+      <a href="#menu">Меню</a>
+      <a href="#locations">Кофейни</a>
+      <a href="#" id="navCartLink">Корзина</a>
+    </nav>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <button class="cart-btn" id="openCartBtn" aria-haspopup="dialog">Корзина <span class="cart-count" id="cartCount">0</span></button>
+      <button class="burger" id="burgerBtn" aria-label="Открыть меню навигации" aria-expanded="false">☰</button>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="eyebrow-line"><span class="dot"></span>3 точки в центре города · навынос за 10 минут</div>
+      <h1>Кофе, который ждёт именно тебя</h1>
+      <p class="lead">Выбирайте напитки и еду в одном меню всех трёх кофеен, оформляйте заказ навынос и забирайте его тёплым — без очереди и лишних вопросов.</p>
+      <div class="hero-cta">
+        <a href="#menu" class="btn-primary">Сделать заказ</a>
+        <span class="hero-note">Работаем ежедневно с 8:00 до 22:00</span>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="cup-plate">
+        <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="100" cy="168" rx="58" ry="9" fill="#2C1810" opacity="0.08"/>
+          <path d="M50 70H150L142 150C140 162 130 170 118 170H82C70 170 60 162 58 150L50 70Z" fill="#E67A2E"/>
+          <path d="M50 70H150L146 108H54L50 70Z" fill="#F5E6D3"/>
+          <path d="M150 82C165 82 175 92 175 105C175 118 165 128 150 128" stroke="#2C1810" stroke-width="7" stroke-linecap="round"/>
+          <path d="M70 60C70 50 78 48 78 40" stroke="#2C1810" stroke-width="5" stroke-linecap="round"/>
+          <path d="M100 60C100 50 108 48 108 40" stroke="#2C1810" stroke-width="5" stroke-linecap="round"/>
+          <path d="M130 60C130 50 138 48 138 40" stroke="#2C1810" stroke-width="5" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="section-head"><h2>Как мы работаем</h2><p>Три шага между «хочу кофе» и «уже пью кофе».</p></div>
+    <div class="steps">
+      <div class="step"><div class="step-index">Шаг 1</div><h3>Выбираешь</h3><p>Смотришь меню всех кофеен в одном месте и добавляешь понравившееся в корзину.</p><div class="step-arrow">→</div></div>
+      <div class="step"><div class="step-index">Шаг 2</div><h3>Заказываешь</h3><p>Указываешь имя, телефон и кофейню, в которой удобно забрать заказ.</p><div class="step-arrow">→</div></div>
+      <div class="step"><div class="step-index">Шаг 3</div><h3>Забираешь через 10 минут</h3><p>Приходишь к нужному времени — заказ уже готов и ждёт на стойке.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="locations">
+  <div class="wrap">
+    <div class="section-head"><h2>Наши кофейни</h2><p>Три точки в центре — забрать заказ можно в любой из них.</p></div>
+    <div class="locations" id="locationsGrid"></div>
+  </div>
+</section>
+
+<section class="section menu-section" id="menu">
+  <div class="wrap">
+    <div class="section-head"><h2>Меню</h2><p>Кофе, десерты и сэндвичи — выбирайте и добавляйте в корзину.</p></div>
+    <div class="tabs" id="tabsRow" role="tablist"></div>
+    <div class="menu-grid" id="menuGrid"></div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot-row">
+    <div><strong>Кофе &amp; Точка</strong> — 3 кофейни в центре города</div>
+    <div>Ежедневно 8:00–22:00 · заказ навынос</div>
+  </div>
+</footer>
+
+<div class="overlay" id="cartOverlay" role="dialog" aria-modal="true" aria-labelledby="cartTitle">
+  <div class="modal">
+    <div class="modal-head"><h2 id="cartTitle">Корзина</h2><button class="modal-close" id="closeCartBtn" aria-label="Закрыть">✕</button></div>
+    <div class="cart-list" id="cartList"></div>
+    <div class="cart-total"><span class="label">Итого</span><span class="value" id="cartTotalValue">0 ₽</span></div>
+    <button class="btn-block" id="checkoutOpenBtn">Оформить заказ</button>
+  </div>
+</div>
+
+<div class="overlay" id="checkoutOverlay" role="dialog" aria-modal="true" aria-labelledby="checkoutTitle">
+  <div class="modal">
+    <div class="modal-head"><h2 id="checkoutTitle">Оформление заказа</h2><button class="modal-close" id="closeCheckoutBtn" aria-label="Закрыть">✕</button></div>
+    <div id="checkoutFormArea">
+      <div class="form-msg" id="formMsg"></div>
+      <div class="field" id="fieldName"><label for="inputName">Имя</label><input type="text" id="inputName" placeholder="Как к вам обращаться"><div class="error-text">Укажите имя</div></div>
+      <div class="field" id="fieldPhone"><label for="inputPhone">Телефон</label><input type="tel" id="inputPhone" placeholder="+7 900 000-00-00"><div class="error-text">Укажите телефон для связи</div></div>
+      <div class="field" id="fieldAddress"><label for="inputAddress">Кофейня для получения</label><select id="inputAddress"><option value="">Выберите кофейню</option></select><div class="error-text">Выберите кофейню</div></div>
+      <div class="field"><label for="inputComment">Комментарий (необязательно)</label><textarea id="inputComment" placeholder="Например: без сахара, к 15:00"></textarea></div>
+      <div class="checkout-total"><span>К оплате при получении</span><span class="value" id="checkoutTotalValue">0 ₽</span></div>
+      <button class="btn-block" id="submitOrderBtn">Отправить заказ</button>
+    </div>
+  </div>
+</div>
+
+<script src="/shared/icons.js"></script>
+<script>
+(function(){
+  'use strict';
+
+  var CART_KEY = 'coffeeTochkaCart';
+  var cart = loadCart();
+  var MENU = { categories: [], items: [] };
+  var LOCATIONS = [];
+  var activeCat = null;
+
+  function loadCart(){ try{ var r = localStorage.getItem(CART_KEY); return r ? JSON.parse(r) : {}; }catch(e){ return {}; } }
+  function saveCart(){ try{ localStorage.setItem(CART_KEY, JSON.stringify(cart)); }catch(e){} }
+  function findItem(id){ return MENU.items.find(function(i){ return i.id === id; }); }
+  function cartCountTotal(){ return Object.keys(cart).reduce(function(s,id){ return s + cart[id]; }, 0); }
+  function cartPriceTotal(){ return Object.keys(cart).reduce(function(s,id){ var it = findItem(id); return s + (it ? it.price*cart[id] : 0); }, 0); }
+
+  async function loadData(){
+    var [menuRes, locRes] = await Promise.all([
+      fetch('/api/menu').then(function(r){ return r.json(); }),
+      fetch('/api/locations').then(function(r){ return r.json(); })
+    ]);
+    MENU.categories = menuRes.categories;
+    MENU.items = menuRes.items;
+    LOCATIONS = locRes.locations;
+    activeCat = MENU.categories[0].id;
+    renderLocations();
+    renderTabs();
+    renderMenuGrid();
+    fillAddressSelect();
+    pruneCartOfMissingItems();
+    updateCartCount();
+  }
+
+  function pruneCartOfMissingItems(){
+    Object.keys(cart).forEach(function(id){ if(!findItem(id)) delete cart[id]; });
+    saveCart();
+  }
+
+  function renderLocations(){
+    var grid = document.getElementById('locationsGrid');
+    grid.innerHTML = '';
+    LOCATIONS.forEach(function(loc, i){
+      var card = document.createElement('div');
+      card.className = 'location-card';
+      card.innerHTML = '<div class="loc-top"><div class="loc-badge">'+(i+1)+'</div><div class="loc-status">Открыто сейчас</div></div><h3>'+loc.name+'</h3><div class="loc-hours">Ежедневно '+loc.hours+'</div>';
+      grid.appendChild(card);
+    });
+  }
+
+  function renderTabs(){
+    var tabsRow = document.getElementById('tabsRow');
+    tabsRow.innerHTML = '';
+    MENU.categories.forEach(function(cat){
+      var btn = document.createElement('button');
+      btn.className = 'tab-btn' + (cat.id === activeCat ? ' active' : '');
+      btn.textContent = cat.label;
+      btn.setAttribute('role','tab');
+      btn.addEventListener('click', function(){ activeCat = cat.id; renderTabs(); renderMenuGrid(); });
+      tabsRow.appendChild(btn);
+    });
+  }
+
+  function renderMenuGrid(){
+    var menuGrid = document.getElementById('menuGrid');
+    menuGrid.innerHTML = '';
+    MENU.items.filter(function(i){ return i.category === activeCat; }).forEach(function(item){
+      var card = document.createElement('div');
+      card.className = 'menu-card' + (item.soldOut ? ' sold-out' : '');
+      card.innerHTML =
+        (item.soldOut ? '<div class="sold-out-tag">Закончилось</div>' : '') +
+        '<div class="item-icon">' + window.renderMenuIcon(item.icon, 28) + '</div>' +
+        '<h3>' + item.name + '</h3>' +
+        '<p class="desc">' + item.desc + '</p>' +
+        '<div class="item-foot">' +
+          '<span class="item-price">' + item.price + ' ₽</span>' +
+          '<button class="add-btn" data-id="' + item.id + '" '+(item.soldOut?'disabled':'')+'>' + (item.soldOut ? 'Нет в наличии' : 'В корзину') + '</button>' +
+        '</div>';
+      menuGrid.appendChild(card);
+    });
+    Array.prototype.forEach.call(menuGrid.querySelectorAll('.add-btn:not(:disabled)'), function(btn){
+      btn.addEventListener('click', function(){
+        addToCart(btn.getAttribute('data-id'));
+        btn.textContent = 'Добавлено';
+        btn.classList.add('added');
+        setTimeout(function(){ btn.textContent = 'В корзину'; btn.classList.remove('added'); }, 900);
+      });
+    });
+  }
+
+  function addToCart(id){ cart[id] = (cart[id]||0)+1; saveCart(); updateCartCount(); }
+  function changeQty(id, delta){
+    if(!cart[id]) return;
+    cart[id] += delta;
+    if(cart[id] <= 0) delete cart[id];
+    saveCart(); updateCartCount(); renderCartList();
+  }
+
+  var cartOverlay = document.getElementById('cartOverlay');
+  var cartList = document.getElementById('cartList');
+  var cartTotalValue = document.getElementById('cartTotalValue');
+  var cartCountEl = document.getElementById('cartCount');
+  var checkoutOpenBtn = document.getElementById('checkoutOpenBtn');
+
+  function updateCartCount(){ cartCountEl.textContent = cartCountTotal(); }
+
+  function renderCartList(){
+    var ids = Object.keys(cart);
+    if(ids.length === 0){
+      cartList.innerHTML = '<div class="cart-empty">Корзина пока пуста. Загляните в меню — выбор ждёт вас.</div>';
+      checkoutOpenBtn.disabled = true;
+    }else{
+      checkoutOpenBtn.disabled = false;
+      cartList.innerHTML = '';
+      ids.forEach(function(id){
+        var item = findItem(id);
+        if(!item) return;
+        var qty = cart[id];
+        var row = document.createElement('div');
+        row.className = 'cart-row';
+        row.innerHTML =
+          '<div class="cart-row-icon">' + window.renderMenuIcon(item.icon, 22) + '</div>' +
+          '<div class="cart-row-info"><div class="name">' + item.name + '</div><div class="price">' + item.price + ' ₽ за шт.</div></div>' +
+          '<div class="qty-control">' +
+            '<button class="qty-btn" data-action="dec" data-id="' + id + '" aria-label="Уменьшить количество">−</button>' +
+            '<span class="qty-value">' + qty + '</span>' +
+            '<button class="qty-btn" data-action="inc" data-id="' + id + '" aria-label="Увеличить количество">+</button>' +
+          '</div>';
+        cartList.appendChild(row);
+      });
+      Array.prototype.forEach.call(cartList.querySelectorAll('.qty-btn'), function(btn){
+        btn.addEventListener('click', function(){ changeQty(btn.getAttribute('data-id'), btn.getAttribute('data-action')==='inc'?1:-1); });
+      });
+    }
+    cartTotalValue.textContent = cartPriceTotal() + ' ₽';
+    document.getElementById('checkoutTotalValue').textContent = cartPriceTotal() + ' ₽';
+  }
+
+  function openOverlay(el){ el.classList.add('open'); document.body.style.overflow='hidden'; }
+  function closeOverlay(el){ el.classList.remove('open'); document.body.style.overflow=''; }
+
+  document.getElementById('openCartBtn').addEventListener('click', function(){ renderCartList(); openOverlay(cartOverlay); });
+  document.getElementById('navCartLink').addEventListener('click', function(e){ e.preventDefault(); renderCartList(); openOverlay(cartOverlay); if(mainNav.classList.contains('open')) toggleNav(false); });
+  document.getElementById('closeCartBtn').addEventListener('click', function(){ closeOverlay(cartOverlay); });
+  cartOverlay.addEventListener('click', function(e){ if(e.target === cartOverlay) closeOverlay(cartOverlay); });
+
+  var checkoutOverlay = document.getElementById('checkoutOverlay');
+  function fillAddressSelect(){
+    var sel = document.getElementById('inputAddress');
+    sel.innerHTML = '<option value="">Выберите кофейню</option>';
+    LOCATIONS.forEach(function(loc){
+      var opt = document.createElement('option');
+      opt.value = loc.id; opt.textContent = loc.name;
+      sel.appendChild(opt);
+    });
+  }
+
+  checkoutOpenBtn.addEventListener('click', function(){ closeOverlay(cartOverlay); openOverlay(checkoutOverlay); });
+  document.getElementById('closeCheckoutBtn').addEventListener('click', function(){ closeOverlay(checkoutOverlay); });
+  checkoutOverlay.addEventListener('click', function(e){ if(e.target === checkoutOverlay) closeOverlay(checkoutOverlay); });
+
+  function toggleFieldError(fieldId, hasError){ document.getElementById(fieldId).classList.toggle('error', hasError); }
+  function showFormMsg(text){
+    var el = document.getElementById('formMsg');
+    el.textContent = text;
+    el.classList.toggle('show', !!text);
+  }
+
+  document.getElementById('submitOrderBtn').addEventListener('click', async function(){
+    showFormMsg('');
+    var nameEl = document.getElementById('inputName');
+    var phoneEl = document.getElementById('inputPhone');
+    var addrEl = document.getElementById('inputAddress');
+    var commentEl = document.getElementById('inputComment');
+
+    var valid = true;
+    toggleFieldError('fieldName', !nameEl.value.trim()); if(!nameEl.value.trim()) valid = false;
+    toggleFieldError('fieldPhone', phoneEl.value.trim().length < 5); if(phoneEl.value.trim().length < 5) valid = false;
+    toggleFieldError('fieldAddress', !addrEl.value); if(!addrEl.value) valid = false;
+    if(Object.keys(cart).length === 0) valid = false;
+    if(!valid) return;
+
+    var payload = {
+      customerName: nameEl.value.trim(),
+      phone: phoneEl.value.trim(),
+      locationId: addrEl.value,
+      comment: commentEl.value.trim(),
+      items: Object.keys(cart).map(function(id){ return { id: id, qty: cart[id] }; }),
+      source: 'customer'
+    };
+
+    var btn = this;
+    btn.disabled = true;
+    try{
+      var res = await fetch('/api/orders', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+      var data = await res.json();
+      if(!res.ok){
+        if(data.error === 'sold_out'){
+          showFormMsg('«' + data.itemName + '» уже закончилось — уберите его из корзины.');
+        }else{
+          showFormMsg('Не получилось оформить заказ. Проверьте данные и попробуйте ещё раз.');
+        }
+        btn.disabled = false;
+        return;
+      }
+      var locName = LOCATIONS.find(function(l){ return l.id === addrEl.value; }).name;
+      alert('Спасибо! Ваш заказ будет готов через 10 минут в ' + locName);
+      cart = {}; saveCart(); updateCartCount();
+      nameEl.value=''; phoneEl.value=''; addrEl.value=''; commentEl.value='';
+      closeOverlay(checkoutOverlay);
+    }catch(e){
+      showFormMsg('Нет связи с сервером. Проверьте подключение и повторите.');
+    }
+    btn.disabled = false;
+  });
+
+  var mainNav = document.getElementById('mainNav');
+  var burgerBtn = document.getElementById('burgerBtn');
+  function toggleNav(force){
+    var open = typeof force === 'boolean' ? force : !mainNav.classList.contains('open');
+    mainNav.classList.toggle('open', open);
+    burgerBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+  burgerBtn.addEventListener('click', function(){ toggleNav(); });
+  Array.prototype.forEach.call(mainNav.querySelectorAll('a:not(#navCartLink)'), function(a){ a.addEventListener('click', function(){ toggleNav(false); }); });
+
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape'){ closeOverlay(cartOverlay); closeOverlay(checkoutOverlay); } });
+
+  loadData();
+})();
+</script>
+</body>
+</html>

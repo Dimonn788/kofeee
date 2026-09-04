@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Админ-панель — Кофе &amp; Точка</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --brown:#2C1810; --brown-soft:#4A2E1E; --beige:#F5E6D3; --beige-light:#FBF4EA;
+    --caramel:#E67A2E; --caramel-dark:#C9631E; --line:rgba(44,24,16,.14);
+    --green:#3B7A3A; --red:#B33A2E;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; font-family:'Inter',sans-serif; background:var(--beige-light); color:var(--brown);}
+  h1,h2,h3{font-family:'Playfair Display',serif; margin:0;}
+  button{font-family:inherit; cursor:pointer; border:none; background:none;}
+  input,select,textarea{font-family:inherit;}
+
+  /* ---------- LOGIN ---------- */
+  #loginScreen{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px;}
+  .login-card{background:#fff; border-radius:20px; padding:38px; width:100%; max-width:380px; box-shadow:0 20px 50px rgba(44,24,16,.12);}
+  .login-card h1{font-size:24px; margin-bottom:6px;}
+  .login-card p{color:var(--brown-soft); font-size:14px; margin:0 0 24px;}
+  .field{margin-bottom:16px;}
+  .field label{display:block; font-size:13px; font-weight:600; color:var(--brown-soft); margin-bottom:7px;}
+  .field input, .field select{width:100%; padding:12px 14px; border-radius:10px; border:1px solid var(--line); font-size:15px;}
+  .field input:focus, .field select:focus{outline:none; border-color:var(--caramel);}
+  .btn{background:var(--caramel); color:#fff; padding:13px; border-radius:10px; font-weight:700; font-size:15px; width:100%; transition:background .15s ease;}
+  .btn:hover{background:var(--caramel-dark);}
+  .btn-secondary{background:var(--beige); color:var(--brown);}
+  .btn-secondary:hover{background:#ecdcc4;}
+  .btn-danger{background:rgba(179,58,46,.1); color:var(--red);}
+  .btn-danger:hover{background:rgba(179,58,46,.18);}
+  .login-error{color:var(--red); font-size:13px; margin-bottom:14px; display:none;}
+  .login-error.show{display:block;}
+  .login-hint{margin-top:16px; font-size:12px; color:var(--brown-soft); opacity:.7;}
+
+  /* ---------- APP LAYOUT ---------- */
+  #appScreen{display:none;}
+  #appScreen.visible{display:block;}
+  .topbar{position:sticky; top:0; z-index:20; background:#fff; border-bottom:1px solid var(--line); padding:0 28px;}
+  .topbar-inner{display:flex; align-items:center; justify-content:space-between; height:68px; max-width:1280px; margin:0 auto;}
+  .brand{display:flex; align-items:center; gap:10px; font-family:'Playfair Display',serif; font-weight:700; font-size:19px;}
+  .brand .mark{width:34px; height:34px; border-radius:9px; background:var(--brown); color:var(--beige); display:flex; align-items:center; justify-content:center;}
+  .tabbar{display:flex; gap:4px;}
+  .tabbar button{padding:10px 18px; border-radius:10px; font-weight:600; font-size:14px; color:var(--brown-soft);}
+  .tabbar button.active{background:var(--beige); color:var(--brown);}
+  .logout-btn{font-size:13px; color:var(--brown-soft); font-weight:600;}
+  .logout-btn:hover{color:var(--red);}
+
+  .page{max-width:1280px; margin:0 auto; padding:32px 28px 60px;}
+  .page-head{display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:24px; flex-wrap:wrap; gap:14px;}
+  .page-head h2{font-size:26px;}
+  .page-head p{color:var(--brown-soft); font-size:14px; margin:6px 0 0;}
+
+  /* ---------- MENU MANAGEMENT ---------- */
+  .cat-block{margin-bottom:36px;}
+  .cat-title{font-size:15px; font-weight:700; color:var(--brown-soft); margin-bottom:14px; display:flex; align-items:center; justify-content:space-between;}
+  .item-table{display:flex; flex-direction:column; gap:10px;}
+  .item-row{background:#fff; border-radius:14px; padding:14px 16px; display:flex; align-items:center; gap:14px; border:1px solid var(--line);}
+  .item-row.sold-out{opacity:.55;}
+  .row-icon{width:42px; height:42px; border-radius:10px; background:var(--beige); display:flex; align-items:center; justify-content:center; color:var(--caramel-dark); flex-shrink:0;}
+  .row-main{flex-grow:1; min-width:0;}
+  .row-main .name{font-weight:600; font-size:15px;}
+  .row-main .desc{font-size:13px; color:var(--brown-soft); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .row-price{font-family:'Playfair Display',serif; font-weight:700; font-size:17px; min-width:70px; text-align:right;}
+  .row-actions{display:flex; align-items:center; gap:8px; flex-shrink:0;}
+  .icon-btn{width:36px; height:36px; border-radius:9px; background:var(--beige); display:flex; align-items:center; justify-content:center; color:var(--brown-soft); transition:background .15s ease;}
+  .icon-btn:hover{background:#ecdcc4;}
+  .icon-btn.danger:hover{background:rgba(179,58,46,.15); color:var(--red);}
+
+  .switch{position:relative; width:44px; height:24px; border-radius:999px; background:var(--green); flex-shrink:0; transition:background .15s ease;}
+  .switch.off{background:#d8cdbf;}
+  .switch .knob{position:absolute; top:2px; left:22px; width:20px; height:20px; border-radius:50%; background:#fff; transition:left .15s ease; box-shadow:0 1px 3px rgba(0,0,0,.25);}
+  .switch.off .knob{left:2px;}
+  .switch-label{font-size:11px; font-weight:700; color:var(--brown-soft); width:64px;}
+
+  .add-item-btn{background:var(--brown); color:var(--beige); padding:10px 18px; border-radius:10px; font-weight:600; font-size:14px;}
+  .add-item-btn:hover{background:var(--brown-soft);}
+
+  /* ---------- STATS ---------- */
+  .stat-cards{display:grid; grid-template-columns:repeat(2,1fr); gap:18px; margin-bottom:36px;}
+  .stat-card{background:#fff; border-radius:18px; padding:24px; border:1px solid var(--line);}
+  .stat-card .label{font-size:13px; color:var(--brown-soft); font-weight:600;}
+  .stat-card .value{font-family:'Playfair Display',serif; font-size:34px; font-weight:700; margin-top:8px;}
+  .stat-card .sub{font-size:13px; color:var(--brown-soft); margin-top:6px;}
+
+  .chart-card{background:#fff; border-radius:18px; padding:26px; border:1px solid var(--line); margin-bottom:24px;}
+  .chart-card h3{font-size:17px; margin-bottom:20px;}
+  .bar-chart{display:flex; align-items:flex-end; gap:6px; height:180px;}
+  .bar-col{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; gap:8px;}
+  .bar-fill-wrap{width:100%; height:100%; display:flex; align-items:flex-end;}
+  .bar-fill{width:100%; background:var(--caramel); border-radius:6px 6px 0 0; min-height:2px; transition:background .15s ease;}
+  .bar-fill:hover{background:var(--caramel-dark);}
+  .bar-col .bar-label{font-size:11px; color:var(--brown-soft); white-space:nowrap;}
+
+  /* ---------- MODAL ---------- */
+  .overlay{position:fixed; inset:0; background:rgba(32,19,12,.5); display:none; align-items:flex-start; justify-content:center; padding:40px 16px; overflow-y:auto; z-index:100;}
+  .overlay.open{display:flex;}
+  .modal{background:#fff; border-radius:20px; width:100%; max-width:440px; padding:28px;}
+  .modal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;}
+  .modal-head h2{font-size:20px;}
+  .modal-close{width:32px; height:32px; border-radius:50%; background:var(--beige); display:flex; align-items:center; justify-content:center;}
+  .icon-picker{display:grid; grid-template-columns:repeat(7,1fr); gap:8px; margin-bottom:6px;}
+  .icon-pick-btn{width:100%; aspect-ratio:1; border-radius:10px; background:var(--beige); display:flex; align-items:center; justify-content:center; color:var(--brown-soft); border:2px solid transparent;}
+  .icon-pick-btn.active{border-color:var(--caramel); color:var(--caramel-dark); background:#fff;}
+  .modal-form-msg{font-size:13px; color:var(--red); margin-bottom:12px; display:none;}
+  .modal-form-msg.show{display:block;}
+  .modal-actions{display:flex; gap:10px; margin-top:6px;}
+
+  @media (max-width:720px){
+    .stat-cards{grid-template-columns:1fr;}
+    .topbar-inner{flex-wrap:wrap; height:auto; padding:12px 0;}
+    .page{padding:24px 16px 50px;}
+    .item-row{flex-wrap:wrap;}
+    .row-price{order:1; margin-left:auto;}
+  }
+</style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="login-card">
+    <h1>Кофе &amp; Точка</h1>
+    <p>Панель управления для владельца</p>
+    <div class="login-error" id="loginError">Неверный логин или пароль</div>
+    <div class="field"><label for="loginUsername">Логин</label><input type="text" id="loginUsername" autocomplete="username"></div>
+    <div class="field"><label for="loginPassword">Пароль</label><input type="password" id="loginPassword" autocomplete="current-password"></div>
+    <button class="btn" id="loginBtn">Войти</button>
+    <div class="login-hint">Демо-доступ: admin / admin123</div>
+  </div>
+</div>
+
+<div id="appScreen">
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand"><span class="mark">☕</span>Кофе &amp; Точка</div>
+      <div class="tabbar">
+        <button class="active" data-tab="menu">Меню</button>
+        <button data-tab="stats">Доход</button>
+      </div>
+      <button class="logout-btn" id="logoutBtn">Выйти</button>
+    </div>
+  </div>
+
+  <div class="page" id="menuPage">
+    <div class="page-head">
+      <div><h2>Управление меню</h2><p>Меняйте цены, описание и отмечайте позиции, которые закончились.</p></div>
+      <button class="add-item-btn" id="addItemBtn">+ Добавить позицию</button>
+    </div>
+    <div id="catBlocks"></div>
+  </div>
+
+  <div class="page" id="statsPage" style="display:none;">
+    <div class="page-head"><div><h2>Доход</h2><p>Выручка по всем кофейням суммарно.</p></div></div>
+    <div class="stat-cards">
+      <div class="stat-card"><div class="label">Сегодня</div><div class="value" id="todayRevenue">0 ₽</div><div class="sub" id="todayOrders">0 заказов</div></div>
+      <div class="stat-card"><div class="label">Этот месяц</div><div class="value" id="monthRevenue">0 ₽</div><div class="sub" id="monthOrders">0 заказов</div></div>
+    </div>
+    <div class="chart-card"><h3>Выручка за последние 14 дней</h3><div class="bar-chart" id="dailyChart"></div></div>
+    <div class="chart-card"><h3>Выручка по месяцам</h3><div class="bar-chart" id="monthlyChart"></div></div>
+  </div>
+</div>
+
+<div class="overlay" id="itemOverlay" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="modal-head"><h2 id="itemModalTitle">Новая позиция</h2><button class="modal-close" id="closeItemModal">✕</button></div>
+    <div class="modal-form-msg" id="itemFormMsg"></div>
+    <div class="field"><label for="itemName">Название</label><input type="text" id="itemName"></div>
+    <div class="field"><label for="itemCategory">Категория</label><select id="itemCategory"></select></div>
+    <div class="field"><label for="itemPrice">Цена, ₽</label><input type="number" id="itemPrice" min="1"></div>
+    <div class="field"><label for="itemDesc">Описание</label><textarea id="itemDesc" rows="2" style="width:100%; padding:12px 14px; border-radius:10px; border:1px solid var(--line); resize:vertical;"></textarea></div>
+    <div class="field"><label>Иконка</label><div class="icon-picker" id="iconPicker"></div></div>
+    <div class="modal-actions">
+      <button class="btn" id="saveItemBtn" style="flex:2;">Сохранить</button>
+      <button class="btn btn-danger" id="deleteItemBtn" style="flex:1; display:none;">Удалить</button>
+    </div>
+  </div>
+</div>
+
+<script src="/shared/icons.js"></script>
+<script>
+(function(){
+  'use strict';
+  var ICON_KEYS = Object.keys(window.MENU_ICONS);
+  var token = localStorage.getItem('adminToken');
+  var MENU = { categories: [], items: [] };
+  var editingItemId = null;
+
+  function authHeaders(){ return { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }; }
+
+  async function api(path, options){
+    options = options || {};
+    options.headers = authHeaders();
+    var res = await fetch(path, options);
+    if(res.status === 401 || res.status === 403){ logout(); throw new Error('unauthorized'); }
+    return res;
+  }
+
+  function logout(){
+    localStorage.removeItem('adminToken');
+    token = null;
+    document.getElementById('appScreen').classList.remove('visible');
+    document.getElementById('loginScreen').style.display = 'flex';
+  }
+
+  document.getElementById('logoutBtn').addEventListener('click', async function(){
+    try{ await fetch('/api/logout', { method:'POST', headers: authHeaders() }); }catch(e){}
+    logout();
+  });
+
+  document.getElementById('loginBtn').addEventListener('click', async function(){
+    var u = document.getElementById('loginUsername').value.trim();
+    var p = document.getElementById('loginPassword').value;
+    var errEl = document.getElementById('loginError');
+    errEl.classList.remove('show');
+    try{
+      var res = await fetch('/api/login', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({username:u, password:p}) });
+      var data = await res.json();
+      if(!res.ok || data.role !== 'admin'){
+        errEl.textContent = res.ok ? 'Этот вход не для админ-панели' : 'Неверный логин или пароль';
+        errEl.classList.add('show');
+        return;
+      }
+      token = data.token;
+      localStorage.setItem('adminToken', token);
+      enterApp();
+    }catch(e){
+      errEl.textContent = 'Нет связи с сервером';
+      errEl.classList.add('show');
+    }
+  });
+
+  async function enterApp(){
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('appScreen').classList.add('visible');
+    await loadMenu();
+    renderIconPicker();
+  }
+
+  async function loadMenu(){
+    var res = await fetch('/api/menu');
+    var data = await res.json();
+    MENU = data;
+    renderCatBlocks();
+  }
+
+  function renderCatBlocks(){
+    var container = document.getElementById('catBlocks');
+    container.innerHTML = '';
+    MENU.categories.forEach(function(cat){
+      var block = document.createElement('div');
+      block.className = 'cat-block';
+      var items = MENU.items.filter(function(i){ return i.category === cat.id; });
+      block.innerHTML = '<div class="cat-title">' + cat.label + ' <span>' + items.length + ' поз.</span></div><div class="item-table"></div>';
+      var table = block.querySelector('.item-table');
+      items.forEach(function(item){ table.appendChild(buildItemRow(item)); });
+      container.appendChild(block);
+    });
+  }
+
+  function buildItemRow(item){
+    var row = document.createElement('div');
+    row.className = 'item-row' + (item.soldOut ? ' sold-out' : '');
+    row.innerHTML =
+      '<div class="row-icon">' + window.renderMenuIcon(item.icon, 22) + '</div>' +
+      '<div class="row-main"><div class="name">' + item.name + '</div><div class="desc">' + item.desc + '</div></div>' +
+      '<div class="row-price">' + item.price + ' ₽</div>' +
+      '<div class="switch-label">' + (item.soldOut ? 'Нет в наличии' : 'В наличии') + '</div>' +
+      '<div class="switch' + (item.soldOut ? ' off' : '') + '" data-id="' + item.id + '"><div class="knob"></div></div>' +
+      '<div class="row-actions"><button class="icon-btn" data-edit="' + item.id + '" aria-label="Редактировать">✎</button></div>';
+
+    row.querySelector('.switch').addEventListener('click', async function(){
+      var res = await api('/api/items/' + item.id + '/toggle-sold-out', { method:'POST' });
+      var data = await res.json();
+      if(res.ok){ item.soldOut = data.item.soldOut; renderCatBlocks(); }
+    });
+    row.querySelector('[data-edit]').addEventListener('click', function(){ openItemModal(item); });
+    return row;
+  }
+
+  /* ---------- ITEM MODAL ---------- */
+  var itemOverlay = document.getElementById('itemOverlay');
+  function renderIconPicker(selected){
+    var picker = document.getElementById('iconPicker');
+    picker.innerHTML = '';
+    ICON_KEYS.forEach(function(key){
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'icon-pick-btn' + (key === selected ? ' active' : '');
+      btn.setAttribute('data-icon', key);
+      btn.innerHTML = window.renderMenuIcon(key, 18);
+      btn.addEventListener('click', function(){
+        Array.prototype.forEach.call(picker.children, function(b){ b.classList.remove('active'); });
+        btn.classList.add('active');
+      });
+      picker.appendChild(btn);
+    });
+  }
+
+  function fillCategorySelect(selectedCat){
+    var sel = document.getElementById('itemCategory');
+    sel.innerHTML = '';
+    MENU.categories.forEach(function(cat){
+      var opt = document.createElement('option');
+      opt.value = cat.id; opt.textContent = cat.label;
+      if(cat.id === selectedCat) opt.selected = true;
+      sel.appendChild(opt);
+    });
+  }
+
+  function openItemModal(item){
+    editingItemId = item ? item.id : null;
+    document.getElementById('itemModalTitle').textContent = item ? 'Редактировать позицию' : 'Новая позиция';
+    document.getElementById('itemFormMsg').classList.remove('show');
+    document.getElementById('itemName').value = item ? item.name : '';
+    document.getElementById('itemPrice').value = item ? item.price : '';
+    document.getElementById('itemDesc').value = item ? item.desc : '';
+    fillCategorySelect(item ? item.category : MENU.categories[0].id);
+    renderIconPicker(item ? item.icon : 'star');
+    document.getElementById('deleteItemBtn').style.display = item ? 'block' : 'none';
+    itemOverlay.classList.add('open');
+  }
+  document.getElementById('addItemBtn').addEventListener('click', function(){ openItemModal(null); });
+  document.getElementById('closeItemModal').addEventListener('click', function(){ itemOverlay.classList.remove('open'); });
+  itemOverlay.addEventListener('click', function(e){ if(e.target === itemOverlay) itemOverlay.classList.remove('open'); });
+
+  function showItemMsg(text){
+    var el = document.getElementById('itemFormMsg');
+    el.textContent = text;
+    el.classList.toggle('show', !!text);
+  }
+
+  document.getElementById('saveItemBtn').addEventListener('click', async function(){
+    var name = document.getElementById('itemName').value.trim();
+    var category = document.getElementById('itemCategory').value;
+    var price = parseInt(document.getElementById('itemPrice').value, 10);
+    var desc = document.getElementById('itemDesc').value.trim();
+    var iconBtn = document.querySelector('.icon-pick-btn.active');
+    var icon = iconBtn ? iconBtn.getAttribute('data-icon') : 'star';
+
+    if(!name){ showItemMsg('Укажите название'); return; }
+    if(!Number.isFinite(price) || price <= 0){ showItemMsg('Укажите цену больше нуля'); return; }
+
+    var payload = { name: name, category: category, price: price, desc: desc, icon: icon };
+    try{
+      var res;
+      if(editingItemId){
+        res = await api('/api/items/' + editingItemId, { method:'PUT', body: JSON.stringify(payload) });
+      }else{
+        res = await api('/api/items', { method:'POST', body: JSON.stringify(payload) });
+      }
+      var data = await res.json();
+      if(!res.ok){ showItemMsg('Не получилось сохранить. Проверьте данные.'); return; }
+      itemOverlay.classList.remove('open');
+      await loadMenu();
+    }catch(e){}
+  });
+
+  document.getElementById('deleteItemBtn').addEventListener('click', async function(){
+    if(!editingItemId) return;
+    if(!confirm('Удалить позицию из меню? Это действие необратимо.')) return;
+    try{
+      await api('/api/items/' + editingItemId, { method:'DELETE' });
+      itemOverlay.classList.remove('open');
+      await loadMenu();
+    }catch(e){}
+  });
+
+  /* ---------- TABS ---------- */
+  var tabButtons = document.querySelectorAll('.tabbar button');
+  tabButtons.forEach(function(btn){
+    btn.addEventListener('click', async function(){
+      tabButtons.forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      var tab = btn.getAttribute('data-tab');
+      document.getElementById('menuPage').style.display = tab === 'menu' ? 'block' : 'none';
+      document.getElementById('statsPage').style.display = tab === 'stats' ? 'block' : 'none';
+      if(tab === 'stats') await loadStats();
+    });
+  });
+
+  async function loadStats(){
+    try{
+      var res = await api('/api/stats/summary');
+      var data = await res.json();
+      document.getElementById('todayRevenue').textContent = data.todayRevenue.toLocaleString('ru-RU') + ' ₽';
+      document.getElementById('todayOrders').textContent = data.todayOrders + ' заказ(ов)';
+      document.getElementById('monthRevenue').textContent = data.monthRevenue.toLocaleString('ru-RU') + ' ₽';
+      document.getElementById('monthOrders').textContent = data.monthOrders + ' заказ(ов)';
+      renderBarChart('dailyChart', data.dailySeries);
+      renderBarChart('monthlyChart', data.monthlySeries);
+    }catch(e){}
+  }
+
+  function renderBarChart(containerId, series){
+    var el = document.getElementById(containerId);
+    el.innerHTML = '';
+    var max = Math.max.apply(null, series.map(function(s){ return s.value; }).concat([1]));
+    series.forEach(function(point){
+      var pct = Math.round((point.value / max) * 100);
+      var col = document.createElement('div');
+      col.className = 'bar-col';
+      col.title = point.label + ': ' + point.value.toLocaleString('ru-RU') + ' ₽';
+      col.innerHTML = '<div class="bar-fill-wrap"><div class="bar-fill" style="height:' + Math.max(pct,1) + '%"></div></div><div class="bar-label">' + point.label + '</div>';
+      el.appendChild(col);
+    });
+  }
+
+  if(token){ enterApp(); }
+})();
+</script>
+</body>
+</html>
