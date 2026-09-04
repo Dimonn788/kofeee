@@ -1,0 +1,33 @@
+{
+  "locations": [
+    { "id": "tverskaya", "name": "Тверская, 10", "hours": "8:00–22:00" },
+    { "id": "arbat", "name": "Арбат, 25", "hours": "8:00–22:00" },
+    { "id": "pokrovka", "name": "Покровка, 8", "hours": "8:00–22:00" }
+  ],
+  "categories": [
+    { "id": "coffee", "label": "Кофе" },
+    { "id": "desserts", "label": "Десерты" },
+    { "id": "sandwiches", "label": "Сэндвичи" }
+  ],
+  "items": [
+    { "id": "c1", "category": "coffee", "name": "Капучино", "price": 280, "desc": "Эспрессо с бархатистой молочной пеной.", "icon": "coffee-cup", "soldOut": false },
+    { "id": "c2", "category": "coffee", "name": "Латте", "price": 300, "desc": "Мягкий кофе с большим количеством молока.", "icon": "coffee-cup-milk", "soldOut": false },
+    { "id": "c3", "category": "coffee", "name": "Американо", "price": 200, "desc": "Чёрный кофе, разбавленный горячей водой.", "icon": "coffee-mug", "soldOut": false },
+    { "id": "c4", "category": "coffee", "name": "Раф с шоколадом", "price": 340, "desc": "Сливочный раф с ноткой тёмного шоколада.", "icon": "coffee-choc", "soldOut": false },
+    { "id": "d1", "category": "desserts", "name": "Чизкейк Нью-Йорк", "price": 380, "desc": "Классический сливочный чизкейк на песочной основе.", "icon": "cake", "soldOut": false },
+    { "id": "d2", "category": "desserts", "name": "Круассан миндальный", "price": 260, "desc": "Хрустящий круассан с миндальной начинкой.", "icon": "croissant", "soldOut": false },
+    { "id": "d3", "category": "desserts", "name": "Печенье овсяное", "price": 220, "desc": "Домашнее печенье с изюмом и корицей.", "icon": "cookie", "soldOut": false },
+    { "id": "d4", "category": "desserts", "name": "Маффин черничный", "price": 250, "desc": "Нежный маффин с ягодами черники.", "icon": "muffin", "soldOut": false },
+    { "id": "s1", "category": "sandwiches", "name": "Клаб-сэндвич", "price": 420, "desc": "Курица, бекон, овощи и соус на тостовом хлебе.", "icon": "sandwich", "soldOut": false },
+    { "id": "s2", "category": "sandwiches", "name": "Кростини с сыром", "price": 350, "desc": "Хрустящий багет с расплавленным сыром и зеленью.", "icon": "cheese", "soldOut": false },
+    { "id": "s3", "category": "sandwiches", "name": "Сэндвич с авокадо", "price": 390, "desc": "Авокадо, яйцо пашот и микрозелень.", "icon": "avocado", "soldOut": false },
+    { "id": "s4", "category": "sandwiches", "name": "Сэндвич с индейкой", "price": 400, "desc": "Индейка, листовой салат и горчичный соус.", "icon": "drumstick", "soldOut": false }
+  ],
+  "orders": [],
+  "users": [
+    { "username": "admin", "passwordHash": "", "password": "admin123", "role": "admin" },
+    { "username": "cashier", "passwordHash": "", "password": "cashier123", "role": "cashier" }
+  ],
+  "nextItemSeq": 5,
+  "nextOrderSeq": 1
+}
